@@ -1,0 +1,6 @@
+{
+  "name": "PDF Tools",
+  "description": "Free, private client-side PDF tools to convert JPG/PNG images to PDF and compress PDF files directly in your browser.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
