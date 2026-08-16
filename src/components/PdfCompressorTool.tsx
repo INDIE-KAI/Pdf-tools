@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import {
   Minimize2,
@@ -16,6 +16,7 @@ import {
 import { CompressionLevel, CompressionResult } from '../types';
 import { formatBytes, downloadBlob, isPdf } from '../utils/fileUtils';
 import { compressPdfFile, COMPRESSION_OPTIONS } from '../services/pdfCompressorService';
+import { trackToolOpened, trackFileSelected, trackPdfCompressed, trackDownloadClicked } from '../utils/analytics';
 import { FileDropzone } from './FileDropzone';
 import { PrivacyBanner } from './PrivacyBanner';
 import { SeoContentSection } from './SeoContentSection';
@@ -32,6 +33,11 @@ export const PdfCompressorTool: React.FC = () => {
 
   // Result state
   const [result, setResult] = useState<CompressionResult | null>(null);
+
+  // Track tool opened on mount
+  useEffect(() => {
+    trackToolOpened('pdf_compressor');
+  }, []);
 
   const handleFilesSelected = (files: File[]) => {
     setErrorMessage(null);
@@ -50,6 +56,7 @@ export const PdfCompressorTool: React.FC = () => {
 
     setSelectedFile(file);
     setResult(null);
+    trackFileSelected('pdf_compressor');
   };
 
   const handleCompress = async () => {
@@ -71,6 +78,7 @@ export const PdfCompressorTool: React.FC = () => {
       );
 
       setResult(compressionResult);
+      trackPdfCompressed();
 
       if (!compressionResult.isLargerOrSame) {
         try {
@@ -96,6 +104,7 @@ export const PdfCompressorTool: React.FC = () => {
 
   const handleDownload = () => {
     if (!result) return;
+    trackDownloadClicked('pdf_compressor');
     downloadBlob(result.blob, result.fileName);
   };
 

@@ -17,6 +17,7 @@ import {
 import { ImageFileItem, JpgToPdfSettings, PageSizeOption, OrientationOption, MarginOption } from '../types';
 import { formatBytes, downloadBlob, isSupportedImage, getImageDimensions } from '../utils/fileUtils';
 import { convertImagesToPdf } from '../services/imageToPdfService';
+import { trackToolOpened, trackFileSelected, trackPdfCreated, trackDownloadClicked } from '../utils/analytics';
 import { FileDropzone } from './FileDropzone';
 import { PrivacyBanner } from './PrivacyBanner';
 import { SeoContentSection } from './SeoContentSection';
@@ -44,6 +45,11 @@ export const JpgToPdfTool: React.FC = () => {
 
   // Drag and drop reordering state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  // Track tool opened on mount
+  useEffect(() => {
+    trackToolOpened('jpg_to_pdf');
+  }, []);
 
   // Cleanup object URLs on unmount
   useEffect(() => {
@@ -77,6 +83,7 @@ export const JpgToPdfTool: React.FC = () => {
         });
       }
       setImages((prev) => [...prev, ...newItems]);
+      trackFileSelected('jpg_to_pdf');
     } catch {
       setErrorMessage('One or more images could not be loaded. Please try again.');
     }
@@ -137,6 +144,9 @@ export const JpgToPdfTool: React.FC = () => {
       const outName = images.length > 1 ? `${firstBase}-and-${images.length - 1}-more.pdf` : `${firstBase}.pdf`;
       setGeneratedPdfName(outName);
 
+      // Fire GA4 pdf_created event
+      trackPdfCreated();
+
       // Trigger confetti celebration
       try {
         confetti({
@@ -157,6 +167,7 @@ export const JpgToPdfTool: React.FC = () => {
 
   const handleDownload = () => {
     if (!generatedPdfBlob) return;
+    trackDownloadClicked('jpg_to_pdf');
     downloadBlob(generatedPdfBlob, generatedPdfName);
   };
 
